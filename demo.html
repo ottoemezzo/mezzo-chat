@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mezzo.media – Chat Widget Demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: #EEF2FA;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      color: #1a1a24;
+    }
+    .page {
+      max-width: 560px;
+      width: 100%;
+      text-align: center;
+    }
+    .label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #E8522A;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 30px;
+      font-weight: 500;
+      line-height: 1.25;
+      margin-bottom: 14px;
+    }
+    .lead {
+      color: #6b7280;
+      font-size: 15px;
+      line-height: 1.65;
+      margin-bottom: 32px;
+    }
+    .chips {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+    .chip {
+      background: #fff;
+      border: 1px solid #d1d5db;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px;
+      color: #4b5563;
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color .15s, color .15s;
+    }
+    .chip:hover { border-color: #2855A0; color: #2855A0; }
+
+    /* Embed code block */
+    .code-card {
+      background: #1a1a2e;
+      border-radius: 10px;
+      padding: 20px 24px;
+      text-align: left;
+      margin-top: 16px;
+    }
+    .code-label {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    pre {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #e2e8f0;
+      overflow-x: auto;
+    }
+    .c-gray   { color: #6b7280; }
+    .c-green  { color: #86efac; }
+    .c-yellow { color: #fde68a; }
+    .c-blue   { color: #93c5fd; }
+    .c-orange { color: #fdba74; }
+
+    .hint { font-size: 12px; color: #9ca3af; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="label">mezzo.media</div>
+    <h1>Digitale Medien<br>kompetent begleiten</h1>
+    <p class="lead">
+      Fragen zu Bildschirmzeit, Social Media, Gaming oder Online-Sicherheit?
+      Der mezzo.media-Assistent hilft weiter – rund um die Uhr.
+    </p>
+
+    <div class="chips">
+      <button class="chip">Wie viel Bildschirmzeit ist ok?</button>
+      <button class="chip">Mein Kind will TikTok</button>
+      <button class="chip">Gaming-Sucht erkennen</button>
+      <button class="chip">KI kindgerecht erklären</button>
+    </div>
+
+    <div class="code-label" style="text-align:left;color:#9ca3af;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">
+      Embed-Code (vor &lt;/body&gt; einfügen)
+    </div>
+    <div class="code-card">
+      <pre><span class="c-gray">&lt;!-- 1. Konfiguration --&gt;</span>
+<span class="c-blue">&lt;script&gt;</span>
+  <span class="c-yellow">window</span>.<span class="c-green">MezzoChat</span> = {
+    endpoint: <span class="c-orange">'https://your-app.vercel.app/api/chat'</span>,
+  };
+<span class="c-blue">&lt;/script&gt;</span>
+
+<span class="c-gray">&lt;!-- 2. Widget laden --&gt;</span>
+<span class="c-blue">&lt;script</span> <span class="c-green">src</span>=<span class="c-orange">"https://your-app.vercel.app/public/widget.js"</span><span class="c-blue">&gt;&lt;/script&gt;</span></pre>
+    </div>
+
+    <p class="hint">Chat-Widget unten rechts ↘</p>
+  </div>
+
+  <!--
+    ═══════════════════════════════════════════════
+    WIDGET EMBED — replace the endpoint URL with
+    your own Vercel deployment URL.
+    ═══════════════════════════════════════════════
+  -->
+  <script>
+    window.MezzoChat = {
+      endpoint: '/api/chat',   // ← change to your Vercel URL in production
+    };
+
+    // Demo: clicking chips sends a quick message
+    document.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        // Trigger the widget open + prefill (optional enhancement)
+        const btn = document.querySelector('.mzw-btn');
+        if (btn && btn.getAttribute('aria-expanded') === 'false') btn.click();
+        setTimeout(() => {
+          const input = document.querySelector('.mzw-input');
+          if (input) {
+            input.value = chip.textContent;
+            input.dispatchEvent(new Event('input'));
+            input.focus();
+          }
+        }, 100);
+      });
+    });
+  </script>
+  <script src="/public/widget.js"></script>
+</body>
+</html>
