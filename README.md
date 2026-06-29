@@ -1,5 +1,6 @@
 # mezzo.media Chat Widget
 
+
 A production-ready AI chat widget for mezzo.media, powered by Claude.
 
 ## How it works
