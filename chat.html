@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mezzo.media – Medienbildungs-Assistent</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: #fff;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header */
+    #header {
+      background: #2855A0;
+      padding: 13px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .av {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: rgba(255,255,255,.15);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 13px; color: #fff;
+      letter-spacing: -1px; flex-shrink: 0;
+    }
+    .ht-name { color: #fff; font-weight: 600; font-size: 14px; line-height: 1; }
+    .ht-sub  {
+      color: rgba(255,255,255,.65); font-size: 11px; margin-top: 3px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .online { width: 5px; height: 5px; border-radius: 50%; background: #4ADE80; }
+
+    /* Messages */
+    #msgs {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      scrollbar-width: thin;
+      scrollbar-color: #e5e7eb transparent;
+    }
+    #msgs::-webkit-scrollbar { width: 3px; }
+    #msgs::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 3px; }
+
+    .msg { display: flex; padding: 4px 16px; align-items: flex-start; gap: 8px; }
+    .msg.u { flex-direction: row-reverse; }
+
+    .msg-av {
+      width: 26px; height: 26px; border-radius: 6px;
+      background: #2855A0; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800; letter-spacing: -.5px;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .bubble {
+      max-width: 78%; padding: 9px 13px;
+      font-size: 13.5px; line-height: 1.58;
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .msg.u  .bubble { background: #E8522A; color: #fff; border-radius: 14px 4px 14px 14px; }
+    .msg.bt .bubble { background: #EDF1FB; color: #1a1a24; border-radius: 4px 14px 14px 14px; }
+
+    /* Typing dots */
+    @keyframes dot {
+      0%,60%,100% { transform: translateY(0); opacity: .4; }
+      30%          { transform: translateY(-5px); opacity: 1; }
+    }
+    .td {
+      display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+      background: #2855A0; opacity: .4;
+      animation: dot 1.2s ease-in-out infinite;
+    }
+    .td:nth-child(2) { animation-delay: .2s; }
+    .td:nth-child(3) { animation-delay: .4s; }
+
+    /* Input area */
+    #foot {
+      padding: 10px 12px;
+      border-top: 1px solid #f3f4f6;
+      display: flex; gap: 8px; align-items: flex-end;
+      flex-shrink: 0; background: #fff;
+    }
+    #input {
+      flex: 1; padding: 9px 11px;
+      border: 1px solid #d1d5db; border-radius: 8px;
+      font-size: 13.5px; line-height: 1.5;
+      color: #1a1a24; background: #fafaf9;
+      resize: none; font-family: inherit; outline: none;
+      transition: border-color .15s;
+      max-height: 90px; overflow-y: auto;
+    }
+    #input:focus { border-color: #2855A0; }
+    #input::placeholder { color: #9ca3af; }
+
+    #send {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: #E8522A; border: none; cursor: pointer; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: background .15s;
+    }
+    #send:hover:not(:disabled) { background: #C44420; }
+    #send:disabled { opacity: .35; cursor: not-allowed; }
+
+    #credit {
+      padding: 5px 14px 8px; text-align: center;
+      font-size: 10px; color: #c4c9d4;
+      font-family: inherit; flex-shrink: 0;
+    }
+
+    /* Suggestions */
+    #suggestions {
+      display: flex; flex-wrap: wrap; gap: 7px;
+      padding: 4px 16px 10px;
+    }
+    .sug {
+      background: #fff; border: 1px solid #d1d5db;
+      border-radius: 16px; padding: 5px 12px;
+      font-size: 12.5px; color: #4b5563; cursor: pointer;
+      font-family: inherit; transition: border-color .15s, color .15s;
+    }
+    .sug:hover { border-color: #2855A0; color: #2855A0; }
+  </style>
+</head>
+<body>
+
+  <div id="header">
+    <div class="av">m.</div>
+    <div>
+      <div class="ht-name">mezzo.media</div>
+      <div class="ht-sub"><div class="online"></div>Medienbildungs-Assistent</div>
+    </div>
+  </div>
+
+  <div id="msgs" role="log" aria-live="polite" aria-label="Chatverlauf"></div>
+
+  <div id="suggestions">
+    <button class="sug" onclick="quickSend(this.textContent)">Bildschirmzeit</button>
+    <button class="sug" onclick="quickSend(this.textContent)">TikTok &amp; Kinder</button>
+    <button class="sug" onclick="quickSend(this.textContent)">Gaming-Sucht</button>
+    <button class="sug" onclick="quickSend(this.textContent)">KI erklären</button>
+  </div>
+
+  <div id="foot">
+    <textarea id="input" placeholder="Deine Frage…" rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();doSend();}"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,90)+'px';
+               document.getElementById('send').disabled=!this.value.trim();">
+    </textarea>
+    <button id="send" onclick="doSend()" aria-label="Senden" disabled>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+  <div id="credit">mezzo.media · KI kann Fehler machen</div>
+
+  <script>
+    const WELCOME = 'Hallo \uD83D\uDC4B Ich bin der Medienbildungs-Assistent von mezzo.media.\n\n' +
+      'Ich helfe dir bei Fragen zu Bildschirmzeit, Social Media, Gaming und Online-Sicherheit \u2013 ' +
+      'f\u00FCr Eltern, Lehrpersonen und Betreuungspersonen.\n\nWas m\u00F6chtest du wissen?';
+
+    const msgs    = document.getElementById('msgs');
+    const input   = document.getElementById('input');
+    const sendBtn = document.getElementById('send');
+    const sugs    = document.getElementById('suggestions');
+
+    let history   = [];
+    let isLoading = false;
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function addBubble(role, text) {
+      const isUser = role === 'user';
+      msgs.insertAdjacentHTML('beforeend', `
+        <div class="msg ${isUser ? 'u' : 'bt'}">
+          ${!isUser ? '<div class="msg-av" aria-hidden="true">m.</div>' : ''}
+          <div class="bubble">${esc(text)}</div>
+        </div>`);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function showTyping() {
+      msgs.insertAdjacentHTML('beforeend', `
+        <div class="msg bt" id="typing">
+          <div class="msg-av" aria-hidden="true">m.</div>
+          <div class="bubble" style="padding:12px 14px;">
+            <span class="td"></span><span class="td"></span><span class="td"></span>
+          </div>
+        </div>`);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function hideTyping() {
+      document.getElementById('typing')?.remove();
+    }
+
+    function hideSuggestions() {
+      sugs.style.display = 'none';
+    }
+
+    async function doSend() {
+      const text = input.value.trim();
+      if (!text || isLoading) return;
+
+      hideSuggestions();
+      isLoading      = true;
+      input.value    = '';
+      input.style.height = 'auto';
+      sendBtn.disabled = true;
+
+      history.push({ role: 'user', content: text });
+      addBubble('user', text);
+      showTyping();
+
+      try {
+        const res = await fetch('/api/chat', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ messages: history }),
+        });
+
+        let reply;
+        if (res.ok) {
+          const data = await res.json();
+          reply = data.reply || 'Entschuldigung, bitte versuche es erneut.';
+        } else {
+          const err = await res.json().catch(() => ({}));
+          reply = err.error || 'Es ist ein Fehler aufgetreten.';
+        }
+
+        hideTyping();
+        history.push({ role: 'assistant', content: reply });
+        addBubble('assistant', reply);
+      } catch {
+        hideTyping();
+        const errMsg = 'Netzwerkfehler. Bitte \u00FCberpr\u00FCfe deine Verbindung.';
+        history.push({ role: 'assistant', content: errMsg });
+        addBubble('assistant', errMsg);
+      } finally {
+        isLoading = false;
+      }
+    }
+
+    function quickSend(text) {
+      input.value = text;
+      doSend();
+    }
+
+    // Show welcome message on load
+    addBubble('assistant', WELCOME);
+  </script>
+</body>
+</html>
