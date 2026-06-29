@@ -1,0 +1,9 @@
+{
+  "name": "mezzo-chat",
+  "version": "1.0.0",
+  "description": "mezzo.media AI chat widget – secure Vercel deployment",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  }
+}
